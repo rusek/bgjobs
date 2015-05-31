@@ -66,6 +66,9 @@ class Job(object):
     def stderr_path(self):
         return os.path.join(self._backend.get_job_path(self._job_id), 'job_err')
 
+    def is_running(self):
+        return self._backend.is_job_running(self._job_id)
+
     def get_status(self):
         if self._backend.is_job_running(self._job_id):
             return self.RUNNING

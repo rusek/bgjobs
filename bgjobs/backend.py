@@ -6,6 +6,7 @@ import pipes
 import signal
 import shutil
 import subprocess
+import time
 
 
 def _preexec_detach():
@@ -93,7 +94,7 @@ class WorkplaceBackend(object):
         with open(os.path.join(job_path, 'job_cmd'), 'w') as f:
             f.write(
                 'echo $$ > job_pid\n'
-                '{cmd}\n'
+                '({cmd})\n'
                 'echo $? > job_retcode\n'.format(
                     cmd=' '.join(map(pipes.quote, cmd)),
                     path=job_path,
@@ -116,7 +117,14 @@ class WorkplaceBackend(object):
                         stderr=stderr,
                         close_fds=True,
                         preexec_fn=_preexec_detach,
+                        cwd=job_path,
                     )
+
+        pid_path = os.path.join(job_path, 'job_pid')
+        for i in xrange(1000):
+            if os.path.exists(pid_path):
+                break
+            time.sleep(0.01)
 
     def _get_run_args(self, job_id):
         return ['/bin/sh', os.path.join(self.get_job_path(job_id), 'job_cmd')]
