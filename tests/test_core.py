@@ -80,5 +80,25 @@ class TestStartJob(unittest.TestCase):
             job = helpers.wait_for_job(self._wp.start_job('echo $TEST_VALUE'))
         self.assertEqual(helpers.read_file(job.stdout_path), 'abc\n')
 
+    def test_default_shell_label(self):
+        job = self._wp.start_job('echo  "a b"')
+        self.assertEqual(job.get_label(), 'echo  "a b"')
+        helpers.wait_for_job(job)
+
+    def test_default_args_label(self):
+        job = self._wp.start_job(['echo', 'a b'])
+        self.assertEqual(job.get_label(), 'echo \'a b\'')
+        helpers.wait_for_job(job)
+
+    def test_custom_label(self):
+        job = self._wp.start_job('true', label='my label')
+        self.assertEqual(job.get_label(), 'my label')
+        helpers.wait_for_job(job)
+
+    def test_unicode_label(self):
+        job = self._wp.start_job('true', label=u'\u0119\u0105')
+        self.assertEqual(job.get_label(), u'\u0119\u0105')
+        helpers.wait_for_job(job)
+
 if __name__ == '__main__':
     helpers.main()

@@ -19,9 +19,11 @@ class Workplace(object):
     def path(self):
         return self._backend.get_path()
 
-    def start_job(self, cmd, combine_stderr=False):
-        job_id = self._backend.init_job()
-        self._backend.start_job(job_id, cmd, combine_stderr)
+    def start_job(self, cmd, combine_stderr=False, label=None):
+        if label is None:
+            label = cmd
+        job_id = self._backend.init_job(label=label)
+        self._backend.start_job(job_id, cmd, combine_stderr=combine_stderr)
         return Job(self._backend, job_id)
 
     def get_job(self, job_id):
@@ -65,6 +67,9 @@ class Job(object):
     @property
     def stderr_path(self):
         return os.path.join(self._backend.get_job_path(self._job_id), 'job_err')
+
+    def get_label(self):
+        return self._backend.get_job_label(self._job_id)
 
     def is_running(self):
         return self._backend.is_job_running(self._job_id)

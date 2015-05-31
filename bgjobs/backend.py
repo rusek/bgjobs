@@ -1,3 +1,4 @@
+import codecs
 import errno
 import fcntl
 import os
@@ -48,14 +49,24 @@ class WorkplaceBackend(object):
     def job_exists(self, job_id):
         return os.path.exists(self.get_job_path(job_id))
 
-    def init_job(self):
+    def init_job(self, label):
+        if not isinstance(label, basestring):
+            label = ' '.join(map(pipes.quote, label))
+
         job_id = self._next_job_id()
-        os.mkdir(self.get_job_path(job_id))
+        job_path = self.get_job_path(job_id)
+        os.mkdir(job_path)
+        with codecs.open(os.path.join(job_path, 'job_label'), 'w', encoding='UTF-8') as f:
+            f.write(label)
         return job_id
 
     def start_job(self, job_id, cmd, combine_stderr):
         self._write_job_cmd(job_id, cmd)
         self._run_job_cmd(job_id, combine_stderr)
+
+    def get_job_label(self, job_id):
+        with codecs.open(os.path.join(self.get_job_path(job_id), 'job_label'), encoding='UTF-8') as f:
+            return f.read()
 
     def is_job_running(self, job_id):
         return self._is_job_running_by_pid(job_id, self._get_job_pid(job_id))
