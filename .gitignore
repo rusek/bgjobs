@@ -1,3 +1,6 @@
 *.pyc
 *.pyo
 *~
+/bgjobs.egg-info
+/build
+/dist
